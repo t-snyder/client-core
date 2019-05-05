@@ -94,17 +94,17 @@ public class End2EndWithEventing
     // Now for the tests
     End2EndWithEventing test = new End2EndWithEventing( runtimeMgr );
     
-    String[] tran1 = { "a", "b", "1" }; test.submitTransaction( tran1 ); test.waiting();
-    String[] tran2 = { "a", "b", "2" }; test.submitTransaction( tran2 ); test.waiting();
-    String[] tran3 = { "a", "b", "3" }; test.submitTransaction( tran3 ); test.waiting();
-    String[] tran4 = { "a", "b", "4" }; test.submitTransaction( tran4 ); test.waiting();
+    String[] tran1 = { "a", "b", "1" }; test.submitTransaction( tran1 ); //test.waiting();
+    String[] tran2 = { "a", "b", "2" }; test.submitTransaction( tran2 ); //test.waiting();
+    String[] tran3 = { "a", "b", "3" }; test.submitTransaction( tran3 ); //test.waiting();
+    String[] tran4 = { "a", "b", "4" }; test.submitTransaction( tran4 ); //test.waiting();
     String[] tran5 = { "a", "b", "5" }; test.submitTransaction( tran5 ); test.waiting();
     String[] tran6 = { "a", "b", "6" }; test.submitTransaction( tran6 ); test.waiting();
     String[] tran7 = { "a", "b", "7" }; test.submitTransaction( tran7 ); test.waiting();
     String[] tran8 = { "a", "b", "8" }; test.submitTransaction( tran8 ); test.waiting();
     String[] tran9 = { "a", "b", "9" }; test.submitTransaction( tran9 ); test.waiting();
     String[] query1 = { "a" }; test.submitQuery( query1 );
-    String[] query2 = { "a" }; test.submitQuery( query2 );
+ //   String[] query2 = { "a" }; test.submitQuery( query2 );
     
     Map<String, Long> blockHeights = null;
     try

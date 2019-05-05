@@ -42,7 +42,7 @@
           <target>1.8</target>
         </configuration>
       </plugin>
-
+<!--  
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -55,9 +55,10 @@
           </archive>
         </configuration>
       </plugin> 
-      
+-->      
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.1.1</version>
         <configuration>
           <archive>
             <manifest>
