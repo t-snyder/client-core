@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.BasicConfigurator;
 import sdkwrapper.exceptions.BlockEventException;
 import sdkwrapper.exceptions.ConfigurationException;
 import sdkwrapper.exceptions.FabricRequestException;
@@ -66,6 +67,7 @@ public class End2EndWithEventing
 
   public static void main( String[] args )
   {
+    BasicConfigurator.configure();
     final String configPath = "/usr/src/app/config/"; // Folder for Kubernetes configMap
     final String secretPath = "/usr/src/app/secret/"; // Folder for Kubernetes Secrets
 

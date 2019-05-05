@@ -531,7 +531,7 @@ public class FabricServices
     //  sslProvider - Specify the SSL provider - 'openSSL' or 'JDK'
     //  negotiationType - Specify the type of negotiation - TLS or planText
     Properties props = new Properties();
-    props.put( "pemfile", peerVO.getTlsCertificate() );
+    props.put( "pemBytes", peerVO.getTlsCertificate().getBytes() );
     props.put( "trustServerCertificate", peerVO.isTrustServerCert() );
     props.put( "sslProvider", peerVO.getSslProvider() );
     props.put( "negotiationType", peerVO.getNegotiationType() );
@@ -591,17 +591,13 @@ public class FabricServices
     }
 
     // Need to provide client TLS certificate and key files when running mutual tls.
-    if( peerVO.getUseTLS() )
+    if( peerVO.getUseMutualTLS() )
     {
       sdprops.put("org.hyperledger.fabric.sdk.discovery.default.clientCertFile", "src/test/fixture/sdkintegration/e2e-2Orgs/v1.2/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.crt");
       sdprops.put("org.hyperledger.fabric.sdk.discovery.default.clientKeyFile", "src/test/fixture/sdkintegration/e2e-2Orgs/v1.2/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.key");
-
-      // Need to do host name override for true tls in testing environment
-      sdprops.put("org.hyperledger.fabric.sdk.discovery.endpoint.hostnameOverride.localhost:7050", "orderer.example.com");
-      sdprops.put("org.hyperledger.fabric.sdk.discovery.endpoint.hostnameOverride.localhost:7051", "peer0.org1.example.com");
-      sdprops.put("org.hyperledger.fabric.sdk.discovery.endpoint.hostnameOverride.localhost:7056", "peer1.org1.example.com");
     } 
-    else 
+    
+    if ( !peerVO.getUseTLS() ) 
     {
       sdprops.put("org.hyperledger.fabric.sdk.discovery.default.protocol", "grpc:");
     }

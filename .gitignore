@@ -2,3 +2,7 @@
 .project
 .settings/
 target/
+.DS_Store
+.factorypath
+.idea/
+client-core.iml

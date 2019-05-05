@@ -206,6 +206,8 @@ public class OrgContextJsonParser
     peerVO.setTrustServerCert( peerInfo.isTrustServerCert()  );
     peerVO.setSslProvider(     peerInfo.getSslProvider()     );
     peerVO.setNegotiationType( peerInfo.getNegotiationType() );
+    peerVO.setUseTLS(          peerInfo.isUseTLS()           );
+    peerVO.setUseMutualTLS(    peerInfo.isUseMutualTLS()     );
     
     return peerVO;
   }
@@ -381,6 +383,8 @@ public class OrgContextJsonParser
     boolean trustServerCert;
     String  sslProvider;
     String  negotiationType;
+    boolean useTLS;
+    boolean useMutualTLS;
 
     public String   getPeerId()          { return peerId;          }
     public String   getOrgId()           { return orgId;           }
@@ -392,6 +396,8 @@ public class OrgContextJsonParser
     public boolean  isTrustServerCert()  { return trustServerCert; }
     public String   getSslProvider()     { return sslProvider;     }
     public String   getNegotiationType() { return negotiationType; }
+    public boolean  isUseTLS()           { return useTLS;          }
+    public boolean  isUseMutualTLS()     { return useMutualTLS;    }
 
     public void setPeerId(          String   peerId          ) { this.peerId          = peerId;          }
     public void setOrgId(           String   orgId           ) { this.orgId           = orgId;           }
@@ -403,6 +409,8 @@ public class OrgContextJsonParser
     public void setTrustServerCert( boolean  trustServerCert ) { this.trustServerCert = trustServerCert; }
     public void setSslProvider(     String   sslProvider     ) { this.sslProvider     = sslProvider;     }
     public void setNegotiationType( String   negotiationType ) { this.negotiationType = negotiationType; }
+    public void setUseTLS(          boolean  useTLS          ) { this.useTLS = useTLS;                   }
+    public void setUseMutualTLS(    boolean  useMutualTLS    ) { this.useMutualTLS = useMutualTLS;       }
   }
   
   /**
