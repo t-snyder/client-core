@@ -1,9 +1,8 @@
 package sdkwrapper.runtimemgr;
 
-import java.util.concurrent.TimeUnit;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.hyperledger.fabric.sdk.helper.Config;
 
 import sdkwrapper.block.store.BlockEventSeqFileStore;
 import sdkwrapper.block.store.BlockEventSeqStoreIF;
@@ -20,7 +19,7 @@ import sdkwrapper.service.FabricServices;
 
 
 /**
- * Provides the main method for starting up the sdk wrapper functionality.
+ * Provides the main method for starting up the client app with sdk wrapper functionality.
  * 
  * @author tim
  *
@@ -91,6 +90,39 @@ public class RuntimeMgr implements RuntimeMgrIF
    throws ConfigurationException
   {
 	  config = new ConfigProperties( propsPath ); 
+
+	  if( config.hasProperty( Config.PROPOSAL_WAIT_TIME                       )) System.setProperty( Config.PROPOSAL_WAIT_TIME,                       config.getProperty( Config.PROPOSAL_WAIT_TIME ));
+    if( config.hasProperty( Config.CHANNEL_CONFIG_WAIT_TIME                 )) System.setProperty( Config.CHANNEL_CONFIG_WAIT_TIME,                 config.getProperty( Config.CHANNEL_CONFIG_WAIT_TIME ));
+    if( config.hasProperty( Config.TRANSACTION_CLEANUP_UP_TIMEOUT_WAIT_TIME )) System.setProperty( Config.TRANSACTION_CLEANUP_UP_TIMEOUT_WAIT_TIME, config.getProperty( Config.TRANSACTION_CLEANUP_UP_TIMEOUT_WAIT_TIME ));
+    if( config.hasProperty( Config.ORDERER_RETRY_WAIT_TIME                  )) System.setProperty( Config.ORDERER_RETRY_WAIT_TIME,                  config.getProperty( Config.ORDERER_RETRY_WAIT_TIME ));
+    if( config.hasProperty( Config.ORDERER_WAIT_TIME                        )) System.setProperty( Config.ORDERER_WAIT_TIME,                        config.getProperty( Config.ORDERER_WAIT_TIME ));
+    if( config.hasProperty( Config.PEER_EVENT_REGISTRATION_WAIT_TIME        )) System.setProperty( Config.PEER_EVENT_REGISTRATION_WAIT_TIME,        config.getProperty( Config.PEER_EVENT_REGISTRATION_WAIT_TIME ));
+    if( config.hasProperty( Config.PEER_EVENT_RETRY_WAIT_TIME               )) System.setProperty( Config.PEER_EVENT_RETRY_WAIT_TIME,               config.getProperty( Config.PEER_EVENT_RETRY_WAIT_TIME ));
+
+    if( config.hasProperty( Config.PEER_EVENT_RECONNECTION_WARNING_RATE )) System.setProperty( Config.PEER_EVENT_RECONNECTION_WARNING_RATE, config.getProperty( Config.PEER_EVENT_RECONNECTION_WARNING_RATE ));
+    if( config.hasProperty( Config.GENESISBLOCK_WAIT_TIME               )) System.setProperty( Config.GENESISBLOCK_WAIT_TIME,               config.getProperty( Config.GENESISBLOCK_WAIT_TIME ));
+
+    if( config.hasProperty( Config.MAX_LOG_STRING_LENGTH       )) System.setProperty( Config.MAX_LOG_STRING_LENGTH,       config.getProperty( Config.MAX_LOG_STRING_LENGTH ));
+    if( config.hasProperty( Config.EXTRALOGLEVEL               )) System.setProperty( Config.EXTRALOGLEVEL,               config.getProperty( Config.EXTRALOGLEVEL  ));
+    if( config.hasProperty( Config.LOGGERLEVEL                 )) System.setProperty( Config.LOGGERLEVEL,                 config.getProperty( Config.LOGGERLEVEL ));
+    if( config.hasProperty( Config.DIAGNOTISTIC_FILE_DIRECTORY )) System.setProperty( Config.DIAGNOTISTIC_FILE_DIRECTORY, config.getProperty( Config.DIAGNOTISTIC_FILE_DIRECTORY ));
+
+    if( config.hasProperty( Config.CONN_SSL_PROVIDER )) System.setProperty( Config.CONN_SSL_PROVIDER, config.getProperty( Config.CONN_SSL_PROVIDER ));
+    if( config.hasProperty( Config.CONN_SSL_NEGTYPE  )) System.setProperty( Config.CONN_SSL_NEGTYPE,  config.getProperty( Config.CONN_SSL_NEGTYPE ));
+
+    if( config.hasProperty( Config.CLIENT_THREAD_EXECUTOR_COREPOOLSIZE      )) System.setProperty( Config.CLIENT_THREAD_EXECUTOR_COREPOOLSIZE,      config.getProperty( Config.CLIENT_THREAD_EXECUTOR_COREPOOLSIZE ));
+    if( config.hasProperty( Config.CLIENT_THREAD_EXECUTOR_MAXIMUMPOOLSIZE   )) System.setProperty( Config.CLIENT_THREAD_EXECUTOR_MAXIMUMPOOLSIZE,   config.getProperty( Config.CLIENT_THREAD_EXECUTOR_MAXIMUMPOOLSIZE ));
+    if( config.hasProperty( Config.CLIENT_THREAD_EXECUTOR_KEEPALIVETIME     )) System.setProperty( Config.CLIENT_THREAD_EXECUTOR_KEEPALIVETIME,     config.getProperty( Config.CLIENT_THREAD_EXECUTOR_KEEPALIVETIME ));
+    if( config.hasProperty( Config.CLIENT_THREAD_EXECUTOR_KEEPALIVETIMEUNIT )) System.setProperty( Config.CLIENT_THREAD_EXECUTOR_KEEPALIVETIMEUNIT, config.getProperty( Config.CLIENT_THREAD_EXECUTOR_KEEPALIVETIMEUNIT ));
+
+    if( config.hasProperty( Config.PROPOSAL_CONSISTENCY_VALIDATION )) System.setProperty( Config.PROPOSAL_CONSISTENCY_VALIDATION, config.getProperty( Config.PROPOSAL_CONSISTENCY_VALIDATION ));
+    if( config.hasProperty( Config.SERVICE_DISCOVER_FREQ_SECONDS   )) System.setProperty( Config.SERVICE_DISCOVER_FREQ_SECONDS,   config.getProperty( Config.SERVICE_DISCOVER_FREQ_SECONDS ));
+    if( config.hasProperty( Config.SERVICE_DISCOVER_WAIT_TIME      )) System.setProperty( Config.SERVICE_DISCOVER_WAIT_TIME,      config.getProperty( Config.SERVICE_DISCOVER_WAIT_TIME ));
+
+//    if( config.hasProperty( Config.LIFECYCLE_CHAINCODE_ENDORSEMENT_PLUGIN )) System.setProperty( Config.LIFECYCLE_CHAINCODE_ENDORSEMENT_PLUGIN, config.getProperty( Config.LIFECYCLE_CHAINCODE_ENDORSEMENT_PLUGIN ));
+//    if( config.hasProperty( Config.LIFECYCLE_CHAINCODE_VALIDATION_PLUGIN  )) System.setProperty( Config.LIFECYCLE_CHAINCODE_VALIDATION_PLUGIN,  config.getProperty( Config.LIFECYCLE_CHAINCODE_VALIDATION_PLUGIN ));
+//    if( config.hasProperty( Config.LIFECYCLE_INITREQUIREDDEFAULT          )) System.setProperty( Config.LIFECYCLE_INITREQUIREDDEFAULT,          config.getProperty( Config.LIFECYCLE_INITREQUIREDDEFAULT ));
+  
   }
   
   private void startFabricServices( String sdkConfigPath )

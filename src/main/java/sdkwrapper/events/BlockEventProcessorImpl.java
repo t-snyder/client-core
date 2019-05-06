@@ -96,9 +96,14 @@ System.out.println( "Already processed block " + blockEvent.getBlockNumber() );
         tran.setTransactionId( tranEvent.getTransactionID() );
         tran.setTranTimestamp( tranEvent.getTimestamp()     );
         tran.setEpoch(         tranEvent.getEpoch()         );
+        
+        // If valid == false then the transaction was rejected during the commit process.
+        // validation code == 10 the rejection was due to endorsement policy failure
+        // validation code == 11 the rejection was due to read set validation errors.
         tran.setValid(         tranEvent.isValid()          );
         tran.setValidationCode( Byte.toString( tranEvent.getValidationCode() ));
-
+System.out.println( "Transaction " + tran.getTransactionId() + " in Block " + tran.getBlockSeqNum() + " isValid  = " + tran.isValid() + " validation code = " + tran.getValidationCode() );
+        
         // We only want to process transactions which are of type transaction and not config.
         
         Iterable<TransactionActionInfo> blockTranInfoIter = tranEvent.getTransactionActionInfos();
@@ -134,7 +139,8 @@ System.out.println( "Already processed block " + blockEvent.getBlockNumber() );
         }
       }
       
-      // We now have the block info and the transaction list. We need to process the transactions now.
+      // We now have the block info and the transaction list. We need to process the transactions now. The protoobuf structures
+      // support multiple transactions within a single transaction, but in practice there is only 1.
       if( !blockInfo.getTransactionList().isEmpty() )
       {
         for( BlockTransaction tran : blockInfo.getTransactionList() )
@@ -144,7 +150,10 @@ System.out.println( "Already processed block " + blockEvent.getBlockNumber() );
             for( BlockTransactionAction action : tran.getTranActions() )
             {
 System.out.println( "For block " + tran.getBlockSeqNum() + " transaction " + tran.getTransactionId() + " response status = " + action.getResponseStatus() );
-            
+              if( !tran.isValid() )
+              {
+ //               runtimeMgr.
+              }
             }
           }
         }
