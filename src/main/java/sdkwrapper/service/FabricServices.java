@@ -140,6 +140,8 @@ public class FabricServices
       throw new ConfigurationException( msg );
     }
 
+    String channelId = null;
+
     // Build Discovery Peers which are the organization's peers and will be used for Eventing and Queries.
     for( PeerVO peerVO : discoveryPeers )
     {
@@ -148,52 +150,46 @@ public class FabricServices
       {
         peer = buildDiscoveryPeer( peerVO );
         orgPeers.add( peer );
+
+        // Service discovery
+        Set<String> channelIds  = hfClient.queryChannels( peer );
+
+        System.out.println( "channels found = " + channelIds );
+
+        if( channelIds != null && !channelIds.isEmpty() )
+        {
+          for( String id : channelIds )
+          {
+            Peer channelPeer = buildDiscoveryPeer(peerVO);
+            channelId = id;
+            Channel discoveredChannel = discoverChannel( id, channelPeer );
+
+            channels.put( id, discoveredChannel );
+          }
+        }
+
+        if( !channels.isEmpty() )
+        {
+          orgPeer = peer;
+          break; // Dont need to go to the second one.
+        }
       } 
       catch( InvalidArgumentException e )
       {
         String msg = "Error initializing org Peer = " + peerVO.getPeerId() + "; Error = " + e.getMessage();
         logger.error( msg );
       }
+      catch( ProposalException e )
+      {
+        String msg = "Error initializing service discovery channels for channel = " + channelId + "; Error = " + e.getMessage() + "; Fatal Error. Stopping";
+        logger.error( msg );
+        throw new InfrastructureException( msg );
+      }
     }
     
     if( orgPeers.isEmpty() )
     {
       String msg = "Error could not initialize any Peers for service discovery; Fatal Error. Stopping";
-      logger.error( msg );
-      throw new InfrastructureException( msg );
-    }
-    
-    // Service Discovery
-    String channelId = null;
-    try
-    {
-      for( Peer peer : orgPeers )
-      {
-        Set<String> channelIds  = hfClient.queryChannels( peer );
-
-        System.out.println( "channels found = " + channelIds );
-        
-        if( channelIds != null && !channelIds.isEmpty() )
-        {
-          for( String id : channelIds )
-          {
-            channelId = id;
-            Channel discoveredChannel = discoverChannel( id, peer );
-
-            channels.put( id, discoveredChannel );
-          }
-        }
-        
-        if( !channels.isEmpty() )
-        {
-          orgPeer = peer;
-          break; // Dont need to go to the second one.
-        }
-      }
-    }
-    catch( InvalidArgumentException | ProposalException e )
-    {
-      String msg = "Error initializing service discovery channels for channel = " + channelId + "; Error = " + e.getMessage() + "; Fatal Error. Stopping";
       logger.error( msg );
       throw new InfrastructureException( msg );
     }
@@ -555,28 +551,40 @@ public class FabricServices
     
     for( Peer peer : orgPeers )
     {
-      try 
+      try
       {
         Collection<Peer> queryPeer = new ArrayList<Peer>();
-        queryPeer.add( peer );
-        queryProposals = channel.queryByChaincode( queryByChaincodeRequest, queryPeer );
+        Collection<Peer> channelPeers = channel.getPeers();
 
-        for( ProposalResponse proposalResponse : queryProposals ) 
-        {
-          if (!proposalResponse.isVerified() || proposalResponse.getStatus() != Status.SUCCESS) 
-          {
-            String msg = "Failed query proposal from peer " + proposalResponse.getPeer().getName() + " status: " + proposalResponse.getStatus() +
-                        ". Messages: " + proposalResponse.getMessage()
-                        + ". Was verified : " + proposalResponse.isVerified();
-            logger.error( msg );
+        channelPeers.forEach(channelPeer -> {
+          if (channelPeer.getUrl().compareTo(peer.getUrl()) == 0) {
+            queryPeer.add(channelPeer);
           }
-          else
+        });
+
+        if (!queryPeer.isEmpty()) {
+          queryProposals = channel.queryByChaincode( queryByChaincodeRequest, queryPeer );
+
+          for( ProposalResponse proposalResponse : queryProposals )
           {
-            return proposalResponse.getProposalResponse().getResponse().getPayload().toStringUtf8();
+            if (!proposalResponse.isVerified() || proposalResponse.getStatus() != Status.SUCCESS)
+            {
+              String msg = "Failed query proposal from peer " + proposalResponse.getPeer().getName() + " status: " + proposalResponse.getStatus() +
+                      ". Messages: " + proposalResponse.getMessage()
+                      + ". Was verified : " + proposalResponse.isVerified();
+              logger.error( msg );
+            }
+            else
+            {
+              return proposalResponse.getProposalResponse().getResponse().getPayload().toStringUtf8();
+            }
           }
+        } else {
+          String msg = "Peer with URL " + peer.getUrl() + " not on channel " + channelId;
+          logger.error(msg);
         }
       }
-      catch( Exception e ) 
+      catch( Exception e )
       {
         throw new FabricRequestException( e.getMessage() );
       }
@@ -608,15 +616,15 @@ public class FabricServices
     ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName( ccId );
     ChaincodeID         chainCodeId        = chaincodeIDBuilder.build();
     
-    QueryByChaincodeRequest queryRequest = hfClient.newQueryProposalRequest();
-    queryRequest.setArgs( args ); // test using bytes as args. End2end uses Strings.
-    queryRequest.setFcn( method );
-    queryRequest.setChaincodeID( chainCodeId );
+    QueryByChaincodeRequest queryByChaincodeRequest = hfClient.newQueryProposalRequest();
+    queryByChaincodeRequest.setArgs( args ); // test using bytes as args. End2end uses Strings.
+    queryByChaincodeRequest.setFcn( method );
+    queryByChaincodeRequest.setChaincodeID( chainCodeId );
 
     // Private data needs to be sent via Transient field to prevent identifiable information being sent to the orderer.
     try
     {
-      queryRequest.setTransientMap( privateDataMap );
+      queryByChaincodeRequest.setTransientMap( privateDataMap );
     } catch( InvalidArgumentException e1 )
     {
       // TODO Auto-generated catch block
@@ -642,31 +650,43 @@ public class FabricServices
     }
 
     Collection<ProposalResponse> queryProposals;
-    
+
     for( Peer peer : orgPeers )
     {
-      try 
+      try
       {
         Collection<Peer> queryPeer = new ArrayList<Peer>();
-        queryPeer.add( peer );
-        queryProposals = channel.queryByChaincode( queryRequest, queryPeer );
+        Collection<Peer> channelPeers = channel.getPeers();
 
-        for( ProposalResponse proposalResponse : queryProposals ) 
-        {
-          if (!proposalResponse.isVerified() || proposalResponse.getStatus() != Status.SUCCESS) 
-          {
-            String msg = "Failed query proposal from peer " + proposalResponse.getPeer().getName() + " status: " + proposalResponse.getStatus() +
-                        ". Messages: " + proposalResponse.getMessage()
-                        + ". Was verified : " + proposalResponse.isVerified();
-            logger.error( msg );
+        channelPeers.forEach(channelPeer -> {
+          if (channelPeer.getUrl().compareTo(peer.getUrl()) == 0) {
+            queryPeer.add(channelPeer);
           }
-          else
+        });
+
+        if (!queryPeer.isEmpty()) {
+          queryProposals = channel.queryByChaincode( queryByChaincodeRequest, queryPeer );
+
+          for( ProposalResponse proposalResponse : queryProposals )
           {
-            return proposalResponse.getProposalResponse().getResponse().getPayload().toStringUtf8();
+            if (!proposalResponse.isVerified() || proposalResponse.getStatus() != Status.SUCCESS)
+            {
+              String msg = "Failed query proposal from peer " + proposalResponse.getPeer().getName() + " status: " + proposalResponse.getStatus() +
+                      ". Messages: " + proposalResponse.getMessage()
+                      + ". Was verified : " + proposalResponse.isVerified();
+              logger.error( msg );
+            }
+            else
+            {
+              return proposalResponse.getProposalResponse().getResponse().getPayload().toStringUtf8();
+            }
           }
+        } else {
+          String msg = "Peer with URL " + peer.getUrl() + " not on channel " + channelId;
+          logger.error(msg);
         }
       }
-      catch( Exception e ) 
+      catch( Exception e )
       {
         throw new FabricRequestException( e.getMessage() );
       }
@@ -901,31 +921,34 @@ public class FabricServices
           logger.info( msg );
         }
 
-        try
-        {
+
           for( String ccId : discoveredChannel.getDiscoveredChaincodeNames() )
           {
-            CollectionConfigPackage queryCollections = discoveredChannel.queryCollectionsConfig( ccId, peer, users.get( "Admin" ));
-          
-            if( queryCollections != null && !queryCollections.getCollectionConfigs().isEmpty() )
+            try
             {
-              Map<String, CollectionConfig> ccCollections = new HashMap<String, CollectionConfig>();
-            
-              for( CollectionConfig collectionConfig : queryCollections.getCollectionConfigs() ) 
+              CollectionConfigPackage queryCollections = discoveredChannel.queryCollectionsConfig( ccId, peer, users.get( "Admin" ));
+
+              if( queryCollections != null && !queryCollections.getCollectionConfigs().isEmpty() )
               {
-                ccCollections.put( collectionConfig.getName(), collectionConfig );
+                Map<String, CollectionConfig> ccCollections = new HashMap<String, CollectionConfig>();
+
+                for( CollectionConfig collectionConfig : queryCollections.getCollectionConfigs() )
+                {
+                  ccCollections.put( collectionConfig.getName(), collectionConfig );
+                }
+
+                collections.put( ccId, ccCollections );
               }
-            
-              collections.put( ccId, ccCollections );
             }
-          }
-        }
-        catch( ProposalException | InvalidProtocolBufferException e )
-        {
-          String msg = "Error encountered during service discovery for channel " + channelId + ". Error = " + e.getMessage() + "; Fatal Error. Stopping";
-          logger.error( msg );
-          throw new InfrastructureException( msg );
-        }
+            catch( ProposalException | InvalidProtocolBufferException e )
+            {
+              if (!e.getMessage().contains("collections config not defined for chaincode")) {
+                String msg = "Error encountered during service discovery for channel " + channelId + ". Error = " + e.getMessage() + "; Fatal Error. Stopping";
+                logger.error( msg );
+                throw new InfrastructureException( msg );
+              }
+            }
+          } //endfor
         
         logger.info( "Channel = " + channelId + " successfully initialized via Service Discovery." );
         return discoveredChannel;
@@ -974,16 +997,17 @@ public class FabricServices
     Channel newChannel = null;
     String  msg        = null;
     
-    for( Peer peer : orgPeers )
+    for( PeerVO discoveryPeer : discoveryPeers )
     {
       try
       {
+        Peer peer = buildDiscoveryPeer(discoveryPeer);
         newChannel = discoverChannel( channel.getName(), peer );
         channels.put( channel.getName(), newChannel );
 
         createBlockListener( newChannel );
       }
-      catch( InfrastructureException | BlockEventException e )
+      catch( InfrastructureException | BlockEventException | InvalidArgumentException | ConfigurationException e )
       {
         msg = "Error restarting channel = " + newChannel.getName() + "; Error = " + e.getMessage();
         logger.error( msg );
