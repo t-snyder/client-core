@@ -65,18 +65,18 @@ public class RuntimeMgr implements RuntimeMgrIF
     // Initializing Fabric Services
     startFabricServices( sdkConfigPath );
 
-    try
-    {
-      // Start Fabric Block Listeners
-      this.blockEventProcessor = new BlockEventProcessorImpl( this, blockSeqStore );
-
-      // Start the channel block event listeners
-      fabricServices.initializeListeners();
-    }
-    catch( BlockEventException e )
-    {
-      throw new InfrastructureException( "Error starting Block listeners. Error = " + e.getMessage() );
-    }
+//    try
+//    {
+//      // Start Fabric Block Listeners
+//      this.blockEventProcessor = new BlockEventProcessorImpl( this, blockSeqStore );
+//
+//      // Start the channel block event listeners
+//      fabricServices.initializeListeners();
+//    }
+//    catch( BlockEventException e )
+//    {
+//      throw new InfrastructureException( "Error starting Block listeners. Error = " + e.getMessage() );
+//    }
   }
 
   @Override

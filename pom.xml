@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ibm-blockchain-labs</groupId>
   <artifactId>fabric-client-core</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
 
   <distributionManagement>
     <repository>
